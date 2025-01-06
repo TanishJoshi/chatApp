@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <!-- Link to Google Fonts for styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* General body styling */
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298); /* Unique gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+        /* Chat container styling */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 400px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        /* Chat header styling */
+        .chat-header {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            padding: 15px;
+            color: white;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        /* Chat messages area styling */
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f0f4f8; /* Light contrasting background */
+        }
+        /* Individual message styling */
+        .message {
+            margin: 10px 0;
+            display: flex;
+        }
+        /* Align user messages to the right */
+        .message.user {
+            justify-content: flex-end;
+        }
+        /* Message content styling */
+        .message-content {
+            max-width: 70%;
+            padding: 12px;
+            border-radius: 15px;
+            font-size: 1em;
+            line-height: 1.5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        /* Styling for user messages */
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+        }
+        /* Styling for bot messages */
+        .message.bot .message-content {
+            background: #d9e4ea;
+            color: black;
+        }
+        /* Timestamp styling */
+        .message-timestamp {
+            font-size: 0.8em;
+            color: #888;
+            text-align: right;
+            margin-top: 5px;
+        }
+        /* Chat input section styling */
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        /* Text input field styling */
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        /* Send button styling */
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        /* Hover effect for send button */
+        .chat-input button:hover {
+            background: linear-gradient(90deg, #45a049, #4CAF50);
+        }
+        /* Theme toggle button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            font-size: 1em;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .theme-toggle:hover {
+            background: #e68900;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main chat container -->
+    <div class="chat-container">
+        <!-- Chat header section -->
+        <div class="chat-header">Chat App</div>
+        <!-- Chat messages area -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Chat messages will dynamically appear here -->
+        </div>
+        <!-- Chat input section -->
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type a message...">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+    <button class="theme-toggle" id="themeToggle">Switch Theme</button>
+
+    <script>
+        // Get references to DOM elements
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Persisted chat history
+        const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+        // Function to add a message to the chat
+        function addMessage(content, sender) {
+            const message = document.createElement('div');
+            message.classList.add('message', sender);
+
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('message-content');
+            messageContent.textContent = content;
+
+            const timestamp = document.createElement('div');
+            timestamp.classList.add('message-timestamp');
+            timestamp.textContent = new Date().toLocaleTimeString();
+
+            message.appendChild(messageContent);
+            message.appendChild(timestamp);
+
+            chatMessages.appendChild(message);
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            chatHistory.push({ content, sender, time: timestamp.textContent });
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        // Load chat history
+        function loadChatHistory() {
+            chatHistory.forEach(({ content, sender, time }) => {
+                const message = document.createElement('div');
+                message.classList.add('message', sender);
+
+                const messageContent = document.createElement('div');
+                messageContent.classList.add('message-content');
+                messageContent.textContent = content;
+
+                const timestamp = document.createElement('div');
+                timestamp.classList.add('message-timestamp');
+                timestamp.textContent = time;
+
+                message.appendChild(messageContent);
+                message.appendChild(timestamp);
+
+                chatMessages.appendChild(message);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Event listener for send button click
+        sendButton.addEventListener('click', () => {
+            const text = chatInput.value.trim();
+            if (text) {
+                addMessage(text, 'user');
+                chatInput.value = '';
+                setTimeout(() => {
+                    addMessage('This is a bot response.', 'bot');
+                }, 500);
+            }
+        });
+
+        // Event listener for Enter key press
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            if (document.body.classList.contains('dark-theme')) {
+                document.body.style.background = 'linear-gradient(135deg, #1e1e1e, #3a3a3a)';
+                chatContainer.style.color = '#ddd';
+                themeToggle.textContent = 'Switch to Light Theme';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #1e3c72, #2a5298)';
+                chatContainer.style.color = '#fff';
+                themeToggle.textContent = 'Switch to Dark Theme';
+            }
+        });
+
+        // Initialize the app
+        loadChatHistory();
+    </script>
+</body>
+</html>
